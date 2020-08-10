@@ -1,41 +1,57 @@
-import React from 'react';
-
-import dadosIniciais from '../../data/dados_iniciais.json';
+import React, { useEffect, useState } from 'react';
 
 import BannerMain from '../../components/BannerMain';
 import Carousel from '../../components/Carousel';
 import PageDefault from '../../components/PageDefault';
 
+import repositorioCategorias from '../../repositories/categorias';
+
 function Home() {
+  const [dadosIniciais, setDadosIniciais] = useState({
+    categorias: [],
+  });
+
+  useEffect(() => {
+    repositorioCategorias.getAllWithVideos()
+      .then((categoriasComVideos) => {
+        setDadosIniciais(categoriasComVideos);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
   return (
-    <div style={{background: "#141414"}}>
-      <PageDefault>
+    <PageDefault paddingAll={0}>
 
-        <BannerMain
-          videoTitle={dadosIniciais.categorias[0].videos[0].titulo}
-          url={dadosIniciais.categorias[0].videos[0].url}
-          videoDescription={"O que é front-end? Trabalhando na área"}
-        />
+      {dadosIniciais.length > 0 && dadosIniciais.map((categoria, index) => {
+        if (index === 0) {
+          return (
+            <div key={categoria.id}>
+              <BannerMain
+                videoTitle={dadosIniciais[0].videos[0].titulo}
+                url={dadosIniciais[0].videos[0].url}
+                videoDescription="O que é front-end? Trabalhando na área"
+              />
 
-        {dadosIniciais.categorias.map((categoria, index) => {     
-          return(
-            <div key={index}>
-              {index === 0 ? (
-                <Carousel
-                  ignoreFirstVideo
-                  category={categoria}
-                />  
-              ) : (
-                <Carousel
-                  category={categoria}
-                />
-              )}
+              <Carousel
+                ignoreFirstVideo
+                category={dadosIniciais[0]}
+              />
             </div>
-          )
-        })}
+          );
+        }
 
-      </PageDefault>
-    </div>
+        return (
+          <Carousel
+            key={categoria.id}
+            category={categoria}
+          />
+        );
+      })}
+
+    </PageDefault>
+
   );
 }
 
